@@ -1,0 +1,57 @@
+version: '2'
+services:
+  sharelatex:
+    restart: unless-stopped
+    build:
+      context: ${SHARELATEX_PATH}
+      dockerfile: Dockerfile
+
+    container_name: sharelatex
+    depends_on:
+      sharelatex-mongo:
+        condition: service_healthy
+      sharelatex-redis:
+        condition: service_started
+    links:
+      - sharelatex-mongo
+      - sharelatex-redis
+    volumes:
+      - ${SHARELATEX_PATH}/data:/var/lib/sharelatex
+    environment:
+      SHARELATEX_APP_NAME: Overleaf
+      SHARELATEX_MONGO_URL: mongodb://sharelatex-mongo/sharelatex
+      SHARELATEX_REDIS_HOST: sharelatex-redis
+      REDIS_HOST: sharelatex-redis
+      ENABLED_LINKED_FILE_TYPES: 'url,project_file'
+      ENABLE_CONVERSIONS: 'true'
+      EMAIL_CONFIRMATION_DISABLED: 'true'
+      TEXMFVAR: /var/lib/sharelatex/tmp/texmf-var
+      SHARELATEX_BEHIND_PROXY: 'true'
+      SHARELATEX_SECURE_COOKIE: 'true'
+      SHARELATEX_SITE_LANGUAGE: 'en'
+    
+  sharelatex-mongo:
+    restart: unless-stopped
+    image: bitnami/mongodb:5.0
+    container_name: sharelatex-mongo
+    expose:
+      - 27017
+    volumes:
+      - ${SHARELATEX_DB_PATH}/data:/data/db
+    healthcheck:
+      test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    environment:
+      MONGODB_REPLICA_SET_MODE: primary
+      ALLOW_EMPTY_PASSWORD: 'yes'
+
+  sharelatex-redis:
+    restart: unless-stopped
+    image: redis:5
+    container_name: sharelatex-redis
+    expose:
+      - 6379
+    volumes:
+      - ${SHARELATEX_REDIS_PATH}/data:/data
