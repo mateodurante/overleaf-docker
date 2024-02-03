@@ -5,7 +5,8 @@ services:
     build:
       context: ${SHARELATEX_PATH}
       dockerfile: Dockerfile
-
+    ports:
+      - "8088:80"
     container_name: sharelatex
     depends_on:
       sharelatex-mongo:
