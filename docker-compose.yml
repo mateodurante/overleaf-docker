@@ -31,7 +31,7 @@ services:
     
   sharelatex-mongo:
     restart: unless-stopped
-    image: bitnami/mongodb:5.0
+    image: bitnami/mongodb:4.4
     container_name: sharelatex-mongo
     expose:
       - 27017
