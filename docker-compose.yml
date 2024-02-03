@@ -57,11 +57,12 @@ services:
       - ${SHARELATEX_REDIS_PATH}/redis-data:/data
 
   sharelatex-nginx:
-      image: jwilder/nginx-proxy
-      container_name: nginx-proxy
-      ports:
-        #- "80:80"
-        - "8088:443"
-      volumes:
-        - /var/run/docker.sock:/tmp/docker.sock:ro
-        - /home/sharelatex/tmp:/etc/nginx/certs
+    restart: unless-stopped
+    image: nginx:latest
+    container_name: sharelatex-nginx
+    ports:
+      - "8088:443"
+    volumes:
+      - ${SHARELATEX_PATH}/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - sharelatex
