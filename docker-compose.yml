@@ -6,7 +6,7 @@ services:
       context: ${PWD}
       dockerfile: Dockerfile
     expose:
-      - 5000
+      - 80
     container_name: sharelatex
     depends_on:
       - sharelatex-mongo
