@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
   sharelatex:
     restart: unless-stopped
@@ -9,10 +9,8 @@ services:
       - "8088:80"
     container_name: sharelatex
     depends_on:
-      sharelatex-mongo:
-        condition: service_healthy
-      sharelatex-redis:
-        condition: service_started
+      - sharelatex-mongo
+      - sharelatex-redis
     links:
       - sharelatex-mongo
       - sharelatex-redis
