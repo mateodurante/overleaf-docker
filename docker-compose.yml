@@ -6,7 +6,7 @@ services:
       context: ${SHARELATEX_PATH}
       dockerfile: Dockerfile
     ports:
-      - "8088:80"
+      - "8087:80"
     container_name: sharelatex
     depends_on:
       - sharelatex-mongo
@@ -15,7 +15,7 @@ services:
       - sharelatex-mongo
       - sharelatex-redis
     volumes:
-      - ${SHARELATEX_PATH}/data:/var/lib/sharelatex
+      - ${SHARELATEX_PATH}/sharelatex-data:/var/lib/sharelatex
     environment:
       SHARELATEX_APP_NAME: Overleaf
       SHARELATEX_MONGO_URL: mongodb://sharelatex-mongo/sharelatex
@@ -28,6 +28,7 @@ services:
       SHARELATEX_BEHIND_PROXY: 'true'
       SHARELATEX_SECURE_COOKIE: 'true'
       SHARELATEX_SITE_LANGUAGE: 'en'
+      SHARELATEX_SITE_URL: 'https://overleaf.hackinggroup.local:8088/'
     
   sharelatex-mongo:
     restart: unless-stopped
@@ -36,7 +37,7 @@ services:
     expose:
       - 27017
     volumes:
-      - ${SHARELATEX_DB_PATH}/data:/data/db
+      - ${SHARELATEX_PATH}/db-data:/data/db
     healthcheck:
       test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
       interval: 10s
@@ -53,4 +54,15 @@ services:
     expose:
       - 6379
     volumes:
-      - ${SHARELATEX_REDIS_PATH}/data:/data
+      - ${SHARELATEX_REDIS_PATH}/redis-data:/data
+
+  sharelatex-nginx:
+    restart: unless-stopped
+    image: nginx:1.19
+    container_name: sharelatex-nginx
+    ports:
+      - "8088:80"
+    volumes:
+      - ${SHARELATEX_PATH}/nginx:/etc/nginx/conf.d
+    depends_on:
+      - sharelatex
