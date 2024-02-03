@@ -28,7 +28,7 @@ services:
       SHARELATEX_BEHIND_PROXY: 'true'
       SHARELATEX_SECURE_COOKIE: 'true'
       SHARELATEX_SITE_LANGUAGE: 'en'
-      SHARELATEX_SITE_URL: 'https://overleaf.hackinggroup.local:8088/'
+      SHARELATEX_SITE_URL: 'https://overleaf.hackinggroup.local:8088'
     
   sharelatex-mongo:
     restart: unless-stopped
