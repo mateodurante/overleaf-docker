@@ -5,8 +5,8 @@ services:
     build:
       context: ${PWD}
       dockerfile: Dockerfile
-    ports:
-      - "8087:80"
+    expose:
+      - 5000
     container_name: sharelatex
     depends_on:
       - sharelatex-mongo
