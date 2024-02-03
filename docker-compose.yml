@@ -3,7 +3,7 @@ services:
   sharelatex:
     restart: unless-stopped
     build:
-      context: ${SHARELATEX_PATH}
+      context: ${PWD}
       dockerfile: Dockerfile
     ports:
       - "8087:80"
@@ -15,7 +15,7 @@ services:
       - sharelatex-mongo
       - sharelatex-redis
     volumes:
-      - ${SHARELATEX_PATH}/sharelatex-data:/var/lib/sharelatex
+      - ${PWD}/sharelatex-data:/var/lib/sharelatex
     environment:
       SHARELATEX_APP_NAME: Overleaf
       SHARELATEX_MONGO_URL: mongodb://sharelatex-mongo/sharelatex
@@ -37,7 +37,7 @@ services:
     expose:
       - 27017
     volumes:
-      - ${SHARELATEX_PATH}/db-data:/data/db
+      - ${PWD}/db-data:/data/db
     healthcheck:
       test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
       interval: 10s
@@ -63,6 +63,7 @@ services:
     ports:
       - "8088:443"
     volumes:
-      - ${SHARELATEX_PATH}/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ${PWD}/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ${PWD}/nginx/ssl:/etc/nginx/ssl
     depends_on:
       - sharelatex
