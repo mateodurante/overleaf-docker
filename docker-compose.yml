@@ -37,7 +37,7 @@ services:
     expose:
       - 27017
     volumes:
-      - ${PWD}/db-data:/data/db
+      - ${PWD}/db-data:/bitnami/mongodb/data/db
     healthcheck:
       test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
       interval: 10s
