@@ -1,69 +1,65 @@
-version: '3'
 services:
-  sharelatex:
-    restart: unless-stopped
-    build:
-      context: ${PWD}
-      dockerfile: Dockerfile
+  overleaf-sharelatex:
+    restart:
+      unless-stopped
+      #build:
+      #context: ${PWD}
+      #dockerfile: Dockerfile
+    image: sharelatex/sharelatex:5.5.1
     expose:
       - 80
-    container_name: sharelatex
+    container_name: overleaf-sharelatex
     depends_on:
-      - sharelatex-mongo
-      - sharelatex-redis
+      - overleaf-mongo
+      - overleaf-redis
     links:
-      - sharelatex-mongo
-      - sharelatex-redis
+      - overleaf-mongo
+      - overleaf-redis
     volumes:
-      - ${PWD}/sharelatex-data:/var/lib/sharelatex
+      - ${PWD}/overleaf-data:/var/lib/overleaf
     environment:
-      SHARELATEX_APP_NAME: Overleaf
-      SHARELATEX_MONGO_URL: mongodb://sharelatex-mongo/sharelatex
-      SHARELATEX_REDIS_HOST: sharelatex-redis
-      REDIS_HOST: sharelatex-redis
-      ENABLED_LINKED_FILE_TYPES: 'url,project_file'
-      ENABLE_CONVERSIONS: 'true'
-      EMAIL_CONFIRMATION_DISABLED: 'true'
-      TEXMFVAR: /var/lib/sharelatex/tmp/texmf-var
-      SHARELATEX_BEHIND_PROXY: 'true'
-      SHARELATEX_SECURE_COOKIE: 'true'
-      SHARELATEX_SITE_LANGUAGE: 'en'
-      SHARELATEX_SITE_URL: 'https://overleaf.hackinggroup.local:8088'
-    
-  sharelatex-mongo:
-    restart: unless-stopped
-    image: bitnami/mongodb:4.4
-    container_name: sharelatex-mongo
-    expose:
-      - 27017
-    volumes:
-      - ${PWD}/db-data:/data/db
-    healthcheck:
-      test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
-      interval: 10s
-      timeout: 10s
-      retries: 5
-    environment:
-      MONGODB_REPLICA_SET_MODE: primary
-      ALLOW_EMPTY_PASSWORD: 'yes'
+      OVERLEAF_APP_NAME: Overleaf
+      OVERLEAF_MONGO_URL: mongodb://overleaf-mongo:30001/overleaf
+      OVERLEAF_REDIS_HOST: overleaf-redis
+      REDIS_HOST: overleaf-redis
+      ENABLED_LINKED_FILE_TYPES: "url,project_file"
+      ENABLE_CONVERSIONS: "true"
+      EMAIL_CONFIRMATION_DISABLED: "true"
+      TEXMFVAR: /var/lib/overleaf/tmp/texmf-var
+      OVERLEAF_BEHIND_PROXY: "true"
+      OVERLEAF_SECURE_COOKIE: "true"
+      OVERLEAF_SITE_LANGUAGE: "en"
+      OVERLEAF_SITE_URL: "https://overleaf.hackinggroup.local:8088"
 
-  sharelatex-redis:
+  overleaf-mongo:
+    image: mongo:6.0
+    command: [--replSet, overleaf, --bind_ip_all, --port, "30001"]
+    volumes:
+      - ./mongo-data:/data/db
+    ports:
+      - 30001:30001
+    healthcheck:
+      test: test $$(mongosh --port 30001 --quiet --eval "try {rs.initiate({_id:'overleaf',members:[{_id:0,host:\"overleaf-mongo:30001\"}]})} catch(e) {rs.status().ok}") -eq 1
+      interval: 10s
+      start_period: 30s
+
+  overleaf-redis:
     restart: unless-stopped
     image: redis:5
-    container_name: sharelatex-redis
+    container_name: overleaf-redis
     expose:
       - 6379
     volumes:
-      - ${SHARELATEX_REDIS_PATH}/redis-data:/data
+      - ./redis-data:/data
 
-  sharelatex-nginx:
+  overleaf-nginx:
     restart: unless-stopped
     image: nginx:latest
-    container_name: sharelatex-nginx
+    container_name: overleaf-nginx
     ports:
       - "8088:443"
     volumes:
       - ${PWD}/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ${PWD}/nginx/ssl:/etc/nginx/ssl
     depends_on:
-      - sharelatex
+      - overleaf-sharelatex
